@@ -67,6 +67,8 @@ typedef struct LEDStatus
 	int8_t   OnOffStatus;
 }LED;
 LED led = {50.0,0};
+
+int8_t dispF;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -372,18 +374,19 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 				else if(RxBuffer[0] == 'a')
 				{
 					led.Frequency += 1;
+					dispF = led.Frequency;
 					processState = LED_CONTROL;
-					sprintf((char*)text, "LED Frequency +1 Hz\r\nCurrent Frequency = %d Hz.\r\n", led.Frequency);
+					sprintf((char*)text, "LED Frequency +1 Hz\r\nCurrent Frequency = %d Hz.\r\n--------------------\r\nMODE : LED_CONTROL\r\n~Press d for ON/OFF LED.\r\n~Press a for speed up 1 Hz.\r\n~Press s for slow down 1 Hz.\r\n~Press x for go BACK.\r\n", dispF);
 					HAL_UART_Transmit_DMA(&huart2, text, strlen((char*)text));
-					sprintf((char*)text, "--------------------\r\nMODE : LED_CONTROL\r\n~Press d for ON/OFF LED.\r\n~Press a for speed up 1 Hz.\r\n~Press s for slow down 1 Hz.\r\n~Press x for go BACK.\r\n");
-					HAL_UART_Transmit_DMA(&huart2, text, strlen((char*)text));
+
 				}
 				else if(RxBuffer[0] == 's')
 				{
 					if(led.Frequency > 0)
 					{
 						led.Frequency -= 1;
-						sprintf((char*)text, "LED Frequency -1 Hz\r\nCurrent Frequency = %d Hz.\r\n", led.Frequency);
+						dispF = led.Frequency;
+						sprintf((char*)text, "LED Frequency -1 Hz\r\nCurrent Frequency = %d Hz.\r\n\r\n--------------------\r\nMODE : LED_CONTROL\r\n~Press d for ON/OFF LED.\r\n~Press a for speed up 1 Hz.\r\n~Press s for slow down 1 Hz.\r\n~Press x for go BACK.\r\n", dispF);
 						HAL_UART_Transmit_DMA(&huart2, text, strlen((char*)text));
 					}
 					else
@@ -421,8 +424,6 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 					HAL_UART_Transmit_DMA(&huart2, text, strlen((char*)text));
 					processState = LED_CONTROL;
 				}
-
-
 			break;
 
 			case BUTTON_STATUS:
