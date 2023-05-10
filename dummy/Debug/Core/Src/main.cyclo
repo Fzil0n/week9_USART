@@ -5,6 +5,6 @@ main.c:236:13:MX_DMA_Init	1
 main.c:257:13:MX_GPIO_Init	1
 main.c:318:6:UARTDMAConfig	1
 main.c:327:6:HAL_UART_RxCpltCallback	16
-main.c:452:6:DummyTask	8
-main.c:483:6:ButtonUpdate	1
-main.c:494:6:Error_Handler	1
+main.c:446:6:DummyTask	8
+main.c:477:6:ButtonUpdate	1
+main.c:488:6:Error_Handler	1
