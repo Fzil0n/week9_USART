@@ -47,17 +47,17 @@ DMA_HandleTypeDef hdma_usart2_tx;
 
 /* USER CODE BEGIN PV */
 uint8_t RxBuffer[20];
-uint8_t TxBuffer[200];
+uint8_t TxBuffer[100];
 
 enum State {INIT, LED_CONTROL, BUTTON_STATUS};
 enum State processState = INIT;
-uint8_t text[200];
+uint8_t text[1500];
 
 typedef struct ButtonStatus
 {
 	int8_t Command;
 	int8_t CurrentStatus;
-	int8_t PreviousStatus;
+
 }Button;
 Button button1 = {0};
 
@@ -119,8 +119,10 @@ int main(void)
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
 
-  sprintf((char*)text, "-----Program Start-----\r\n");
+  sprintf((char*)text, "-----Program Start-----\r\n-----Main Manu-----\r\n~Press 0 for LED CONTROL.\r\n~Press 1 for BUTTON STATUS.\r\n");
   HAL_UART_Transmit_DMA(&huart2, text, strlen((char*)text));
+//  sprintf((char*)text, "");
+//  HAL_UART_Transmit_DMA(&huart2, text, strlen((char*)text));
   //print(text);
   UARTDMAConfig();
 
@@ -339,13 +341,13 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 				if(RxBuffer[0] == '0')
 				{
 					processState = LED_CONTROL;
-					sprintf((char*)text, "MODE : LED_CONTROL\r\n");
+					sprintf((char*)text, "MODE : LED_CONTROL\r\n~Press d for ON/OFF LED.\r\n~Press a for speed up 1 Hz.\r\n~Press s for slow down 1 Hz.\r\n~Press x for go BACK.\r\n");
 					HAL_UART_Transmit_DMA(&huart2, text, strlen((char*)text));
 				}
 				else if(RxBuffer[0] == '1')
 				{
 					processState = BUTTON_STATUS;
-					sprintf((char*)text, "MODE : BUTTON_STATUS\r\n");
+					sprintf((char*)text, "MODE : BUTTON_STATUS\r\n~Press x for go BACK.\r\n");
 					HAL_UART_Transmit_DMA(&huart2, text, strlen((char*)text));
 					button1.Command = 1;
 				}
@@ -364,12 +366,16 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 					processState = INIT;
 					sprintf((char*)text, "BACK\r\n");
 					HAL_UART_Transmit_DMA(&huart2, text, strlen((char*)text));
+					sprintf((char*)text, "-----Main Manu-----\r\n~Press 0 for LED CONTROL.\r\n~Press 1 for BUTTON STATUS.\r\n");
+					HAL_UART_Transmit_DMA(&huart2, text, strlen((char*)text));
 				}
 				else if(RxBuffer[0] == 'a')
 				{
 					led.Frequency += 1;
 					processState = LED_CONTROL;
-					sprintf((char*)text, "LED Frequency +1 Hz\r\nCurrent Frequency = %d\r\n", led.Frequency);
+					sprintf((char*)text, "LED Frequency +1 Hz\r\nCurrent Frequency = %d Hz.\r\n", led.Frequency);
+					HAL_UART_Transmit_DMA(&huart2, text, strlen((char*)text));
+					sprintf((char*)text, "--------------------\r\nMODE : LED_CONTROL\r\n~Press d for ON/OFF LED.\r\n~Press a for speed up 1 Hz.\r\n~Press s for slow down 1 Hz.\r\n~Press x for go BACK.\r\n");
 					HAL_UART_Transmit_DMA(&huart2, text, strlen((char*)text));
 				}
 				else if(RxBuffer[0] == 's')
@@ -377,7 +383,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 					if(led.Frequency > 0)
 					{
 						led.Frequency -= 1;
-						sprintf((char*)text, "LED Frequency -1 Hz\r\nCurrent Frequency = %d\r\n", led.Frequency);
+						sprintf((char*)text, "LED Frequency -1 Hz\r\nCurrent Frequency = %d Hz.\r\n", led.Frequency);
 						HAL_UART_Transmit_DMA(&huart2, text, strlen((char*)text));
 					}
 					else
@@ -385,6 +391,8 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 						sprintf((char*)text, "Frequency can not less than zero.\r\n");
 						HAL_UART_Transmit_DMA(&huart2, text, strlen((char*)text));
 					}
+					sprintf((char*)text, "--------------------\r\nMODE : LED_CONTROL\r\n~Press d for ON/OFF LED.\r\n~Press a for speed up 1 Hz.\r\n~Press s for slow down 1 Hz.\r\n~Press x for go BACK.\r\n");
+					HAL_UART_Transmit_DMA(&huart2, text, strlen((char*)text));
 					processState = LED_CONTROL;
 				}
 				else if(RxBuffer[0] == 'd')
@@ -393,22 +401,23 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 					if(led.OnOffStatus == 1)
 					{
 						led.OnOffStatus = 0;
-						sprintf((char*)text, "LED : OFF\r\n");
+						sprintf((char*)text, "LED : OFF\r\n--------------------\r\nMODE : LED_CONTROL\r\n~Press d for ON/OFF LED.\r\n~Press a for speed up 1 Hz.\r\n~Press s for slow down 1 Hz.\r\n~Press x for go BACK.\r\n");
 						HAL_UART_Transmit_DMA(&huart2, text, strlen((char*)text));
 					}
 					else if(led.OnOffStatus == 0)
 					{
 						led.OnOffStatus = 1;
-						sprintf((char*)text, "LED : ON\r\n");
+						sprintf((char*)text, "LED : ON\r\n--------------------\r\nMODE : LED_CONTROL\r\n~Press d for ON/OFF LED.\r\n~Press a for speed up 1 Hz.\r\n~Press s for slow down 1 Hz.\r\n~Press x for go BACK.\r\n");
 						HAL_UART_Transmit_DMA(&huart2, text, strlen((char*)text));
 					}
-
 
 					processState = LED_CONTROL;
 				}
 				else
 				{
-					sprintf((char*)text, "Not a command.\r\n");
+					sprintf((char*)text, "Not a command.\r\n--------------------\r\nMODE : LED_CONTROL\r\n~Press d for ON/OFF LED.\r\n~Press a for speed up 1 Hz.\r\n~Press s for slow down 1 Hz.\r\n~Press x for go BACK.\r\n");
+					HAL_UART_Transmit_DMA(&huart2, text, strlen((char*)text));
+					sprintf((char*)text, "MODE : LED_CONTROL\r\n~Press d for ON/OFF LED.\r\n~Press a for speed up 1 Hz.\r\n~Press s for slow down 1 Hz.\r\n~Press x for go BACK.\r\n");
 					HAL_UART_Transmit_DMA(&huart2, text, strlen((char*)text));
 					processState = LED_CONTROL;
 				}
@@ -422,6 +431,8 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 				{
 					button1.Command = 0;
 					sprintf((char*)text, "BACK\r\n");
+					HAL_UART_Transmit_DMA(&huart2, text, strlen((char*)text));
+					sprintf((char*)text, "-----Main Manu-----\r\n~Press 0 for LED CONTROL.\r\n~Press 1 for BUTTON STATUS.\r\n");
 					HAL_UART_Transmit_DMA(&huart2, text, strlen((char*)text));
 					processState = INIT;
 				}
@@ -442,7 +453,6 @@ void DummyTask()
 
 	if(button1.Command == 1 && button1.CurrentStatus == 1)
 	{
-
 		sprintf((char*)text, "Button Status : Unpress \r\n");
 		HAL_UART_Transmit_DMA(&huart2, text, strlen((char*)text));
 	}
