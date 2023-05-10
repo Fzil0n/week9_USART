@@ -68,7 +68,7 @@ typedef struct LEDStatus
 }LED;
 LED led = {50.0,0};
 
-int8_t dispF;
+uint16_t dispF;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
