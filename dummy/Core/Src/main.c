@@ -69,6 +69,7 @@ typedef struct LEDStatus
 LED led = {50.0,0};
 
 uint16_t dispF;
+uint16_t period;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -81,7 +82,7 @@ void UARTPollingMethod();
 void UARTDMAConfig();
 void DummyTask();
 void ButtonUpdate();
-
+void dispButtonState();
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -135,13 +136,15 @@ int main(void)
   while (1)
   {
 	  //UARTPollingMethod();
-	  static uint32_t timestampBt = 0;
-	  	if(HAL_GetTick() >= timestampBt)
-		{
-			timestampBt = HAL_GetTick() + 100;
-			DummyTask();
-			ButtonUpdate();
-		}
+	static uint32_t timestampBt = 0;
+	if(HAL_GetTick() >= timestampBt)
+	{
+		timestampBt = HAL_GetTick() + 100;
+
+		dispButtonState();
+		ButtonUpdate();
+	}
+	DummyTask();
 
 	  //HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_0);
     /* USER CODE END WHILE */
@@ -381,7 +384,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 				}
 				else if(RxBuffer[0] == 's')
 				{
-					if(led.Frequency > 0)
+					if(led.Frequency > 1)
 					{
 						led.Frequency -= 1;
 						dispF = led.Frequency;
@@ -390,7 +393,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 					}
 					else
 					{
-						sprintf((char*)text, "Frequency can not less than zero.\r\n\r\n--------------------\r\nMODE : LED_CONTROL\r\n~Press d for ON/OFF LED.\r\n~Press a for speed up 1 Hz.\r\n~Press s for slow down 1 Hz.\r\n~Press x for go BACK.\r\n");
+						sprintf((char*)text, "Frequency can not less than one.\r\n\r\n--------------------\r\nMODE : LED_CONTROL\r\n~Press d for ON/OFF LED.\r\n~Press a for speed up 1 Hz.\r\n~Press s for slow down 1 Hz.\r\n~Press x for go BACK.\r\n");
 						HAL_UART_Transmit_DMA(&huart2, text, strlen((char*)text));
 					}
 					processState = LED_CONTROL;
@@ -443,24 +446,26 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	}
 }
 
+void dispButtonState()
+{
+	if(button1.Command == 1 && button1.CurrentStatus == 1)
+		{
+			sprintf((char*)text, "Button Status : Unpress \r\n");
+			HAL_UART_Transmit_DMA(&huart2, text, strlen((char*)text));
+		}
+		else if(button1.Command == 1 && button1.CurrentStatus == 0)
+		{
+			sprintf((char*)text, "Button Status : Press \r\n");
+			HAL_UART_Transmit_DMA(&huart2, text, strlen((char*)text));
+		}
+}
 void DummyTask()
 {
-
-	if(button1.Command == 1 && button1.CurrentStatus == 1)
-	{
-		sprintf((char*)text, "Button Status : Unpress \r\n");
-		HAL_UART_Transmit_DMA(&huart2, text, strlen((char*)text));
-	}
-	else if(button1.Command == 1 && button1.CurrentStatus == 0)
-	{
-		sprintf((char*)text, "Button Status : Press \r\n");
-		HAL_UART_Transmit_DMA(&huart2, text, strlen((char*)text));
-	}
-
 	static uint32_t timestampLED = 0;
 	if(led.OnOffStatus == 1)
 	{
 		//Blink LED 5 Hz
+		period = (1.0/led.Frequency)*1000;
 		if(HAL_GetTick() >= timestampLED)
 		{
 			timestampLED = HAL_GetTick() + (1.0/led.Frequency)*1000;
